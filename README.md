@@ -5,11 +5,11 @@ ResolutionSwitcher is a macOS application that allows users to quickly change sc
 - Easily switch between different screen resolutions.
 - Lightweight and fast.
 - Built for personal and experimental use.
-## Installation\
+## Installation
 1. Download the .app from the Releases or clone this repository.
 2. Drag the .app to /Applications.
 3. Run the app from Finder.
-## Project Structure\
+## Project Structure
 - `ResolutionSwitcher/Xcode project file.
 - `Sources/ Contains all Swift source files.
 - `Packages/ Contains dependencies used in the project.
