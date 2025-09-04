@@ -43,14 +43,32 @@ struct ContentView: View {
         .padding()
         .frame(width: 330, height: 370)
         .onAppear {
-            self.screenID = fetchScreenID()
-            self.scalingModes = fetchScalingModes()
+            if !displayplacerExists() {
+                alertMessage = "❌ displayplacer not found in app bundle.\nPlease reinstall the app."
+                showAlert = true
+            } else {
+                self.screenID = fetchScreenID()
+                self.scalingModes = fetchScalingModes()
+            }
         }
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text("Resolution Switcher"),
                 message: Text(alertMessage),
-                dismissButton: .default(Text("OK")))
+                dismissButton: .default(Text("OK"))
+            )
+        }
+    }
+
+    // MARK: - Helpers
+
+    func bundledDisplayplacerPath() -> String? {
+        if let path = Bundle.main.path(forResource: "displayplacer", ofType: nil) {
+            print("✅ Using bundled displayplacer at: \(path)")
+            return path
+        } else {
+            print("❌ No bundled displayplacer found in Resources")
+            return nil
         }
     }
 
@@ -65,8 +83,16 @@ struct ContentView: View {
         let needsScaling = scalingModes[resString] ?? false
         let scalingFlag = needsScaling ? " scaling:on" : ""
 
+        guard let bundledPath = bundledDisplayplacerPath() else {
+            alertMessage = "❌ displayplacer not found in app bundle."
+            showAlert = true
+            return
+        }
+
+        print("👉 Running displayplacer with command: \(bundledPath) id:\(screenID) res:\(resString)\(scalingFlag)")
+
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/displayplacer")
+        process.executableURL = URL(fileURLWithPath: bundledPath)
         process.arguments = ["id:\(screenID) res:\(resString)\(scalingFlag)"]
 
         do {
@@ -85,48 +111,37 @@ struct ContentView: View {
     }
 
     func fetchScreenID() -> String? {
+        guard let bundledPath = bundledDisplayplacerPath() else { return nil }
+
         let process = Process()
         let pipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/displayplacer")
+        process.executableURL = URL(fileURLWithPath: bundledPath)
         process.arguments = ["list"]
         process.standardOutput = pipe
 
-        do {
-            try process.run()
-        } catch {
-            print("Error running displayplacer list: \(error)")
-            return nil
-        }
+        do { try process.run(); process.waitUntilExit() } catch { return nil }
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? ""
 
-        if let match = output.split(separator: "\n").first(where: {
-            $0.contains("Persistent screen id")
-        }) {
+        if let match = output.split(separator: "\n").first(where: { $0.contains("Persistent screen id") }) {
             let parts = match.split(separator: " ")
-            if parts.count > 3 {
-                return String(parts[3])
-            }
+            if parts.count > 3 { return String(parts[3]) }
         }
         return nil
     }
 
     func fetchScalingModes() -> [String: Bool] {
         var map: [String: Bool] = [:]
+        guard let bundledPath = bundledDisplayplacerPath() else { return map }
 
         let process = Process()
         let pipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/displayplacer")
+        process.executableURL = URL(fileURLWithPath: bundledPath)
         process.arguments = ["list"]
         process.standardOutput = pipe
 
-        do {
-            try process.run()
-        } catch {
-            print("Error running displayplacer list: \(error)")
-            return map
-        }
+        do { try process.run(); process.waitUntilExit() } catch { return map }
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? ""
@@ -141,7 +156,10 @@ struct ContentView: View {
                 }
             }
         }
-
         return map
+    }
+
+    func displayplacerExists() -> Bool {
+        return bundledDisplayplacerPath() != nil
     }
 }
