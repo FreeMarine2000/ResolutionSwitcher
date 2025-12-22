@@ -1,0 +1,17 @@
+.DS_Store
+*/build/
+*.os
+*.2
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.xccheckout
+*.xcscmblueprint
+*.ttc
+*.hmap
+*.xccurrentversion
+*.xcuserstate
+*.swp
+*DerivedData*
+.build/
+build/

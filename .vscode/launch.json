@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ResolutionSwitcher}",
+            "name": "Debug ResolutionSwitcher",
+            "program": "${workspaceFolder:ResolutionSwitcher}/.build/debug/ResolutionSwitcher",
+            "preLaunchTask": "swift: Build Debug ResolutionSwitcher"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ResolutionSwitcher}",
+            "name": "Release ResolutionSwitcher",
+            "program": "${workspaceFolder:ResolutionSwitcher}/.build/release/ResolutionSwitcher",
+            "preLaunchTask": "swift: Build Release ResolutionSwitcher"
+        }
+    ]
+}
